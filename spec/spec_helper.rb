@@ -16,7 +16,6 @@ Spec::Runner.configure do |config|
 
     config = YAML.load(IO.read((File.expand_path(File.dirname(__FILE__) + "/../config/memcached.yml"))))['test']
     $memcache = MemcachedWrapper.new(config["servers"].gsub(' ', '').split(','), config)
-    $lock = Cash::Lock.new($memcache)
   end
 
   config.before :each do
@@ -26,8 +25,10 @@ Spec::Runner.configure do |config|
   end
 
   config.before :suite do
+    Cash.configure :repository => $memcache
+    
     ActiveRecord::Base.class_eval do
-      is_cached :repository => Cash::Transactional.new($memcache, $lock)
+      is_cached
     end
 
     Character = Class.new(ActiveRecord::Base)

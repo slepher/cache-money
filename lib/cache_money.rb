@@ -22,27 +22,22 @@ require 'cash/query/calculation'
 require 'cash/util/array'
 require 'cash/util/marshal'
 
-class ActiveRecord::Base
-  def self.is_cached(options = {})
-    if (options == false || options[:repository].nil?)
-      include NoCash
-    else
-      options.assert_valid_keys(:ttl, :repository, :version)
-      include Cash unless ancestors.include?(Cash)
-      Cash::Config.create(self, options)
-    end
-  end
-
-  def <=>(other)
-    if self.id == other.id then 
-      0
-    else
-      self.id < other.id ? -1 : 1
-    end
-  end
-end
-
 module Cash
+  mattr_accessor :enabled
+  self.enabled = true
+  
+  mattr_accessor :repository
+  
+  def self.configure(options = {})
+    options.assert_valid_keys(:repository, :local, :transactional)
+    cache = options[:repository] || raise(":repository is a required option")
+    lock  = Cash::Lock.new(cache)
+    cache = Cash::Local.new(cache) if options.fetch(:local, true)
+    cache = Cash::Transactional.new(cache, lock) if options.fetch(:transactional, true)
+    
+    self.repository = cache
+  end
+  
   def self.included(active_record_class)
     active_record_class.class_eval do
       include Config, Accessor, WriteThrough, Finders
@@ -50,6 +45,12 @@ module Cash
     end
   end
 
+  private
+
+    def self.repository
+      @@repository || raise("Cash.configure must be called when Cash.enabled is true")
+    end
+  
   module ClassMethods
     def self.extended(active_record_class)
       class << active_record_class
@@ -58,7 +59,7 @@ module Cash
     end
 
     def transaction_with_cache_transaction(*args)
-      if cache_config
+      if Cash.enabled && cache_config
         # Wrap both the db and cache transaction in another cache transaction so that the cache 
         # gets written only after the database commit but can still flush the inner cache
         # transaction if an AR::Rollback is issued.
@@ -71,21 +72,28 @@ module Cash
         transaction_without_cache_transaction(*args)
       end
     end
-
+    
     def cacheable?(*args)
-      true
+      Cash.enabled
     end
   end
 end
-module NoCash
-  def self.included(active_record_class)
-    active_record_class.class_eval do
-      extend ClassMethods
-    end
+
+class ActiveRecord::Base
+  include Cash
+  
+  def self.is_cached(options = {})
+    options.assert_valid_keys(:ttl, :repository, :version)
+    opts = options.dup
+    opts[:repository] = Cash.repository unless opts.has_key?(:repository)
+    Cash::Config.create(self, opts)
   end
-  module ClassMethods
-    def cacheable?(*args)
-      false
+
+  def <=>(other)
+    if self.id == other.id then 
+      0
+    else
+      self.id < other.id ? -1 : 1
     end
   end
 end
