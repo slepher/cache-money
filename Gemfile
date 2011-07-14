@@ -8,4 +8,5 @@ group :test do
   gem 'rspec', '1.3.0'
   gem 'sqlite3-ruby'
   gem 'rr'
+  gem 'memcache-client'
 end

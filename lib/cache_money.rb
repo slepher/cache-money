@@ -29,8 +29,17 @@ module Cash
   mattr_accessor :repository
   
   def self.configure(options = {})
-    options.assert_valid_keys(:repository, :local, :transactional)
+    options.assert_valid_keys(:repository, :local, :transactional, :adapter, :default_ttl)
     cache = options[:repository] || raise(":repository is a required option")
+    
+    adapter = options.fetch(:adapter, :memcached)
+    
+    if adapter
+      require "cash/adapter/#{adapter.to_s}"
+      klass = "Cash::Adapter::#{adapter.to_s.classify}".constantize
+      cache = klass.new(cache, :logger => Rails.logger, :default_ttl => options.fetch(:default_ttl, 12.hours))
+    end
+    
     lock  = Cash::Lock.new(cache)
     cache = Cash::Local.new(cache) if options.fetch(:local, true)
     cache = Cash::Transactional.new(cache, lock) if options.fetch(:transactional, true)

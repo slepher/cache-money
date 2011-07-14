@@ -7,7 +7,7 @@ require 'pp'
 require 'cache_money'
 #require 'memcache'
 require 'memcached'
-require 'memcached_wrapper'
+require 'cash/adapter/memcached'
 
 Spec::Runner.configure do |config|
   config.mock_with :rr
@@ -15,7 +15,14 @@ Spec::Runner.configure do |config|
     load File.join(dir, "../db/schema.rb")
 
     config = YAML.load(IO.read((File.expand_path(File.dirname(__FILE__) + "/../config/memcached.yml"))))['test']
-    $memcache = MemcachedWrapper.new(config["servers"].gsub(' ', '').split(','), config)
+    
+    # Test with memcached client
+    $memcache = Cash::Adapter::Memcached.new(Memcached.new(config["servers"].gsub(' ', '').split(','), config), 
+      :default_ttl => 1.minute)
+    
+    # # Test with MemCache client
+    # require 'cash/adapter/memcache_client'
+    # $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new('127.0.0.1'))
   end
 
   config.before :each do
@@ -25,7 +32,7 @@ Spec::Runner.configure do |config|
   end
 
   config.before :suite do
-    Cash.configure :repository => $memcache
+    Cash.configure :repository => $memcache, :adapter => false
     
     ActiveRecord::Base.class_eval do
       is_cached

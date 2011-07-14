@@ -15,7 +15,7 @@ module Cash
     
     def autoload_missing_constants
       yield if block_given?
-    rescue ArgumentError, MemCache::MemCacheError => error
+    rescue ArgumentError, *@remote_cache.exception_classes => error
       lazy_load ||= Hash.new { |hash, hash_key| hash[hash_key] = true; false }
       if error.to_s[/undefined class|referred/] && !lazy_load[error.to_s.split.last.constantize]
         retry

@@ -155,8 +155,9 @@ Currently supported cache clients are: memcached, memcache-client
 
 Add the following to an initializer:
 
-    Cash.configure :repository => $memcached
+    Cash.configure :repository => $memcached, :adapter => :memcached
 
+Supported adapters are :memcache_client, :memcached. :memcached is assumed and is only compatible with Memcached clients.
 Local or transactional semantics may be disabled by setting :local => false or :transactional => false.
 
 Caching can be disabled on a per-environment basis in the environment's initializer:
