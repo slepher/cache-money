@@ -5,9 +5,6 @@ require File.join(dir, '../config/environment')
 require 'spec'
 require 'pp'
 require 'cache_money'
-#require 'memcache'
-require 'memcached'
-require 'cash/adapter/memcached'
 
 Spec::Runner.configure do |config|
   config.mock_with :rr
@@ -16,13 +13,24 @@ Spec::Runner.configure do |config|
 
     config = YAML.load(IO.read((File.expand_path(File.dirname(__FILE__) + "/../config/memcached.yml"))))['test']
     
-    # Test with memcached client
-    $memcache = Cash::Adapter::Memcached.new(Memcached.new(config["servers"].gsub(' ', '').split(','), config), 
-      :default_ttl => 1.minute)
-    
-    # # Test with MemCache client
-    # require 'cash/adapter/memcache_client'
-    # $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new('127.0.0.1'))
+    case ENV['ADAPTER']
+    when 'memcache'
+      # Test with MemCache client
+      require 'cash/adapter/memcache_client'
+      $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new(config['servers']))
+      
+    when 'redis'
+      # Test with Redis client
+      require 'cash/adapter/redis'
+      require 'fakeredis'
+      $memcache = Cash::Adapter::Redis.new(FakeRedis::Redis.new())
+      
+    else
+      require 'cash/adapter/memcached'
+      # Test with memcached client
+      $memcache = Cash::Adapter::Memcached.new(Memcached.new(config["servers"], config), 
+        :default_ttl => 1.minute)
+    end
   end
 
   config.before :each do

@@ -9,4 +9,5 @@ group :test do
   gem 'sqlite3-ruby'
   gem 'rr'
   gem 'memcache-client'
+  gem 'fakeredis'
 end
