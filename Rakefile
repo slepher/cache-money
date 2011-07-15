@@ -1,14 +1,7 @@
-begin
-  require File.expand_path('../.bundle/environment', __FILE__)
-rescue LoadError
-  begin
-    require 'rubygems'
-    require 'bundler'
-    Bundler.require
-  rescue
-    require File.expand_path('../config/environment', __FILE__)
-  end
-end
+require 'rubygems'
+require 'bundler'
+Bundler.require :default, 'development'
+require File.expand_path('../config/environment', __FILE__)
 
 begin
   require 'rake/testtask'
@@ -40,8 +33,6 @@ jt = Jeweler::Tasks.new do |gem|
     "db/schema.rb",
     "spec/**/*.rb"
   ]
-  gem.add_dependency("activerecord", [">= 2.2.0"])
-  gem.add_dependency("activesupport", [">= 2.2.0"])
 end
 Jeweler::GemcutterTasks.new
 
