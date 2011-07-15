@@ -1,7 +1,5 @@
 module Cash
   module WriteThrough
-    DEFAULT_TTL = 12.hours
-
     def self.included(active_record_class)
       active_record_class.class_eval do
         include InstanceMethods
@@ -50,19 +48,23 @@ module Cash
 
     module ClassMethods
       def add_to_caches(object)
-        indices.each { |index| index.add(object) } if cache_config
+        indices.each { |index| index.add(object) } if Cash.enabled && cache_config
+        true
       end
 
       def update_caches(object)
-        indices.each { |index| index.update(object) } if cache_config
+        indices.each { |index| index.update(object) } if Cash.enabled && cache_config
+        true
       end
 
       def remove_from_caches(object)
-        indices.each { |index| index.remove(object) } if cache_config
+        indices.each { |index| index.remove(object) } if Cash.enabled && cache_config
+        true
       end
 
       def expire_caches(object)
-        indices.each { |index| index.delete(object) } if cache_config
+        indices.each { |index| index.delete(object) } if Cash.enabled && cache_config
+        true
       end
     end
   end
