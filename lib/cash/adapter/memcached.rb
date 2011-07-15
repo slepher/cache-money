@@ -7,22 +7,13 @@ module Cash
       def initialize(repository, options = {})
         @repository = repository
         @logger = options[:logger]
-        @default_ttl = options.fetch(:default_ttl, 12.hours)
+        @default_ttl = options[:default_ttl] || raise(":default_ttl is a required option")   
       end
       
-      def add(key, value, ttl=@default_ttl, raw=false)
+      def add(key, value, ttl=nil, raw=false)
         wrap(key, not_stored) do
           logger.debug("Memcached add: #{key.inspect}") if debug_logger?
-          @repository.add(key, value, ttl, !raw)
-          logger.debug("Memcached hit: #{key.inspect}") if debug_logger?
-          stored
-        end
-      end
-      
-      def replace(key, value, ttl = @default_ttl, raw = false)
-        wrap(key, not_stored) do
-          logger.debug("Memcached replace: #{key.inspect}") if debug_logger?
-          @repository.replace(key, value, ttl, !raw)
+          @repository.add(key, raw ? value.to_s : value, ttl || @default_ttl, !raw)
           logger.debug("Memcached hit: #{key.inspect}") if debug_logger?
           stored
         end
@@ -56,10 +47,10 @@ module Cash
         end
       end
       
-      def set(key, value, ttl=@default_ttl, raw=false)
+      def set(key, value, ttl=nil, raw=false)
         wrap(key, not_stored) do
           logger.debug("Memcached set: #{key.inspect}") if debug_logger?
-          @repository.set(key, value, ttl, !raw)
+          @repository.set(key, raw ? value.to_s : value, ttl || @default_ttl, !raw)
           logger.debug("Memcached hit: #{key.inspect}") if debug_logger?
           stored
         end

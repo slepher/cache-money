@@ -1,6 +1,9 @@
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift "#{dir}/../lib"
 
+require 'rubygems'
+require 'bundler'
+
 require File.join(dir, '../config/environment')
 require 'spec'
 require 'pp'
@@ -29,7 +32,7 @@ Spec::Runner.configure do |config|
       require 'cash/adapter/memcached'
       # Test with memcached client
       $memcache = Cash::Adapter::Memcached.new(Memcached.new(config["servers"], config), 
-        :default_ttl => 1.minute)
+        :default_ttl => 1.minute.to_i)
     end
   end
 

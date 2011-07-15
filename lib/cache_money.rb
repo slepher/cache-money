@@ -37,7 +37,7 @@ module Cash
     if adapter
       require "cash/adapter/#{adapter.to_s}"
       klass = "Cash::Adapter::#{adapter.to_s.classify}".constantize
-      cache = klass.new(cache, :logger => Rails.logger, :default_ttl => options.fetch(:default_ttl, 12.hours))
+      cache = klass.new(cache, :logger => Rails.logger, :default_ttl => options.fetch(:default_ttl, 1.day.to_i))
     end
     
     lock  = Cash::Lock.new(cache)
@@ -68,13 +68,13 @@ module Cash
     end
 
     def transaction_with_cache_transaction(*args)
-      if Cash.enabled && cache_config
+      if Cash.enabled
         # Wrap both the db and cache transaction in another cache transaction so that the cache 
         # gets written only after the database commit but can still flush the inner cache
         # transaction if an AR::Rollback is issued.
-        repository.transaction do
+        Cash.repository.transaction do
           transaction_without_cache_transaction(*args) do
-            repository.transaction { yield }
+            Cash.repository.transaction { yield }
           end
         end
       else

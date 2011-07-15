@@ -6,9 +6,17 @@ module Cash
       def initialize(repository, options = {})
         @repository = repository
         @logger = options[:logger]
-        @default_ttl = options[:default_ttl]
+        @default_ttl = options[:default_ttl] || raise(":default_ttl is a required option")
       end
 
+      def add(key, value, ttl=nil, raw=false)
+        @repository.add(key, value || @default_ttl, ttl, !raw)
+      end
+      
+      def set(key, value, ttl=nil, raw=false)
+        @repository.set(key, value || @default_ttl, ttl, raw)
+      end
+      
       def exception_classes
         MemCache::MemCacheError
       end
