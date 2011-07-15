@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'bundler'
+require 'bundler/setup'
 Bundler.require :default, 'development'
 require File.expand_path('../config/environment', __FILE__)
 
