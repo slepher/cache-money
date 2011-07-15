@@ -1,5 +1,3 @@
-require 'Redis'
-
 # Maps Redis methods and semantics to those of memcache-client
 module Cash
   module Adapter
@@ -7,16 +5,18 @@ module Cash
       def initialize(repository, options = {})
         @repository = repository
         @logger = options[:logger]
-        @default_ttl = options.fetch(:default_ttl, 12.hours)
+        @default_ttl = options[:default_ttl] || raise(":default_ttl is a required option")
       end
       
-      def add(key, value, ttl=@default_ttl, raw = false)
+      def add(key, value, ttl=nil, raw = false)
         wrap(key, not_stored) do
           logger.debug("Redis add: #{key.inspect}") if debug_logger?
           value = dump(value) unless raw
+          # TODO: make transactional
           result = @repository.setnx(key, value)
+          @repository.expires(key, ttl || @default_ttl) if 1 == result
           logger.debug("Redis hit: #{key.inspect}") if debug_logger?
-          result == 1 ? stored : not_stored
+          1 == result ? stored : not_stored
         end
       end
       
@@ -26,7 +26,6 @@ module Cash
           value = wrap(key) { @repository.get(key) }
           if value
             logger.debug("Redis hit: #{key.inspect}") if debug_logger?
-            logger.debug(value.inspect)
             value = load(value) unless raw
           else
             logger.debug("Redis miss: #{key.inspect}") if debug_logger?
@@ -55,12 +54,11 @@ module Cash
         end
       end
       
-      def set(key, value, ttl=@default_ttl, raw = false)
+      def set(key, value, ttl=nil, raw = false)
         wrap(key, not_stored) do
           logger.debug("Redis set: #{key.inspect}") if debug_logger?
-          puts value.inspect
           value = dump(value) unless raw
-          @repository.setex(key, ttl, value)
+          @repository.setex(key, ttl || @default_ttl, value)
           logger.debug("Redis hit: #{key.inspect}") if debug_logger?
           stored
         end

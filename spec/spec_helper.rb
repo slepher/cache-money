@@ -17,16 +17,18 @@ Spec::Runner.configure do |config|
     config = YAML.load(IO.read((File.expand_path(File.dirname(__FILE__) + "/../config/memcached.yml"))))['test']
     
     case ENV['ADAPTER']
-    when 'memcache'
+    when 'memcache_client'
       # Test with MemCache client
       require 'cash/adapter/memcache_client'
-      $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new(config['servers']))
+      $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new(config['servers']),
+        :default_ttl => 1.minute.to_i)
       
     when 'redis'
       # Test with Redis client
       require 'cash/adapter/redis'
       require 'fakeredis'
-      $memcache = Cash::Adapter::Redis.new(FakeRedis::Redis.new())
+      $memcache = Cash::Adapter::Redis.new(FakeRedis::Redis.new(),
+        :default_ttl => 1.minute.to_i)
       
     else
       require 'cash/adapter/memcached'

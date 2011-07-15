@@ -10,7 +10,7 @@ module Cash
       end
 
       def add(key, value, ttl=nil, raw=false)
-        @repository.add(key, value || @default_ttl, ttl, !raw)
+        @repository.add(key, value || @default_ttl, ttl, raw)
       end
       
       def set(key, value, ttl=nil, raw=false)
