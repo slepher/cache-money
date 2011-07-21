@@ -21,7 +21,7 @@ module Cash
 
       # User.find(:first, ...), User.find_by_foo(...), User.find(:all, ...), User.find_all_by_foo(...)
       def find_every_with_cache(options)
-        if Cash.enabled
+        if cacheable?
           Query::Select.perform(self, options, scope(:find))
         else
           find_every_without_cache(options)
@@ -30,7 +30,7 @@ module Cash
 
       # User.find(1), User.find(1, 2, 3), User.find([1, 2, 3]), User.find([])
       def find_from_ids_with_cache(ids, options)
-        if Cash.enabled
+        if cacheable?
           Query::PrimaryKey.perform(self, ids, options, scope(:find))
         else
           find_from_ids_without_cache(ids, options)
@@ -39,7 +39,7 @@ module Cash
 
       # User.count(:all), User.count, User.sum(...)
       def calculate_with_cache(operation, column_name, options = {})
-        if Cash.enabled
+        if cacheable?
           Query::Calculation.perform(self, operation, column_name, options, scope(:find))
         else
           calculate_without_cache(operation, column_name, options)

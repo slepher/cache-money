@@ -16,7 +16,7 @@ module Cash
       def self.extended(a_class)
         class << a_class
           def cache_config
-            @cache_config ? @cache_config : superclass.cache_config
+            @cache_config
           end
           
           delegate :repository, :indices, :to => :cache_config
@@ -26,7 +26,7 @@ module Cash
 
       def inherited_with_cache_config(subclass)
         inherited_without_cache_config(subclass)
-        @cache_config.inherit(subclass)
+        @cache_config.inherit(subclass) if @cache_config
       end
 
       def index(attributes, options = {})
@@ -40,6 +40,10 @@ module Cash
 
       def cache_config=(config)
         @cache_config = config
+      end
+      
+      def cacheable?(*args)
+        Cash.enabled && cache_config
       end
     end
 

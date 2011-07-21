@@ -64,6 +64,13 @@ module Cash
             Story.get("title/").should == nil
           end
         end
+        
+        it 'should not remember instance variables' do
+          story = Story.new(:title => 'story')
+          story.instance_eval { @forgetme = "value" }
+          story.save!
+          Story.find(story.id).instance_variables.should_not include("@forgetme")
+        end
       end
 
       describe 'after update' do

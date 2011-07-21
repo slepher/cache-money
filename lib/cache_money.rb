@@ -36,7 +36,7 @@ module Cash
     
     if adapter
       require "cash/adapter/#{adapter.to_s}"
-      klass = "Cash::Adapter::#{adapter.to_s.classify}".constantize
+      klass = "Cash::Adapter::#{adapter.to_s.camelize}".constantize
       cache = klass.new(cache, :logger => Rails.logger, :default_ttl => options.fetch(:default_ttl, 1.day.to_i))
     end
     
@@ -80,10 +80,6 @@ module Cash
       else
         transaction_without_cache_transaction(*args, &block)
       end
-    end
-    
-    def cacheable?(*args)
-      Cash.enabled
     end
   end
 end
