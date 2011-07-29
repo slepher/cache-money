@@ -117,9 +117,7 @@ Nested transactions are fully supported, with partial rollback and (apparent) pa
 
 ### Mocks ###
 
-For your unit tests, it is faster to use a Memcached mock than the real deal. Just place this in your initializer for your test environment:
-
-    $memcache = Cash::Mock.new
+For your unit tests, it is faster to use a Memcached mock than the real deal. In your test environment, initialize the repository with an instance of Cash::Mock.
     
 ### Locks ###
 
@@ -140,34 +138,34 @@ Sometimes your code will request the same cache key twice in one request. You ca
     
 ## Installation ##
 
-#### Step 0: Install MemCached
-
 #### Step 1: Get the GEM ####
 
-    % gem sources -a http://gems.github.com
     % sudo gem install ngmoco-cache-money
     
-#### Step 2: Configure MemCached.
+    Add the gem you your Gemfile:
+    gem 'ngmoco-cache-money', :lib => 'cache_money'
+    
+#### Step 2: Configure cache client
 
-Place a YAML file in `config/memcached.yml` with contents like:
+In your environment, create a cache client instance configured for your cache servers.
+  
+    $memcached = Memcached.new( ...servers..., ...options...)
 
-    test:
-      ttl: 604800
-      namespace: ...
-      sessions: false
-      debug: false
-      servers: localhost:11211
-      cache_money: true
+Currently supported cache clients are: memcached, memcache-client
 
-    development: 
-       ....
+#### Step 3: Configure Caching
 
-#### Step 3: `config/environment.rb` ####
- config.gem "ngmoco-cache-money",
-   :lib => "cache_money",
-   :source => 'http://gems.github.com',
-   :version => '0.2.9'
+Add the following to an initializer:
 
+    Cash.configure :repository => $memcached, :adapter => :memcached
+
+Supported adapters are :memcache_client, :memcached. :memcached is assumed and is only compatible with Memcached clients.
+Local or transactional semantics may be disabled by setting :local => false or :transactional => false.
+
+Caching can be disabled on a per-environment basis in the environment's initializer:
+    
+    Cash.enabled = false
+    
 #### Step 4: Add indices to your ActiveRecord models ####
 
 Queries like `User.find(1)` will use the cache automatically. For more complex queries you must add indices on the attributes that you will query on. For example, a query like `User.find(:all, :conditions => {:name => 'bob'})` will require an index like:
@@ -189,24 +187,20 @@ There may be times where you only want to cache some of your models instead of e
 In that case, you can omit the following from your `config/initializers/cache_money.rb`
 
 	class ActiveRecord::Base
-	  is_cached :repository => $cache
+	  is_cached
 	end
 		
 After that is removed, you can simple put this at the top of your models you wish to cache:
 
-	is_cached :repository => $cache
+	is_cached
 
-Just make sure that you put that line before any of your index directives.
-
-## Version ##
-
-WARNING: This is currently a RELEASE CANDIDATE. A version of this code is in production use at Twitter but the extraction and refactoring process may have introduced bugs and/or performance problems. There are no known major defects at this point, but still.
+Just make sure that you put that line before any of your index directives. Note that all subclasses of a cached model are also cached.
 
 ## Acknowledgments ##
 
 Thanks to
 
  * Twitter for commissioning the development of this library and supporting the effort to open-source it.
- * Sam Luckenbill for pairing with me on most of the hard stuff.
+ * Sam Luckenbill for pairing with Nick on most of the hard stuff.
  * Matthew and Chris for pairing a few days, offering useful feedback on the readability of the code, and the initial implementation of the Memcached mock.
  * Evan Weaver for helping to reason-through software and testing strategies to deal with replication lag, and the initial implementation of the Memcached lock.

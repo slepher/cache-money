@@ -1,13 +1,13 @@
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift "#{dir}/../lib"
 
+require 'rubygems'
+require 'bundler'
+
 require File.join(dir, '../config/environment')
 require 'spec'
 require 'pp'
 require 'cache_money'
-#require 'memcache'
-require 'memcached'
-require 'memcached_wrapper'
 
 Spec::Runner.configure do |config|
   config.mock_with :rr
@@ -15,8 +15,27 @@ Spec::Runner.configure do |config|
     load File.join(dir, "../db/schema.rb")
 
     config = YAML.load(IO.read((File.expand_path(File.dirname(__FILE__) + "/../config/memcached.yml"))))['test']
-    $memcache = MemcachedWrapper.new(config["servers"].gsub(' ', '').split(','), config)
-    $lock = Cash::Lock.new($memcache)
+    
+    case ENV['ADAPTER']
+    when 'memcache_client'
+      # Test with MemCache client
+      require 'cash/adapter/memcache_client'
+      $memcache = Cash::Adapter::MemcacheClient.new(MemCache.new(config['servers']),
+        :default_ttl => 1.minute.to_i)
+      
+    when 'redis'
+      # Test with Redis client
+      require 'cash/adapter/redis'
+      require 'fakeredis'
+      $memcache = Cash::Adapter::Redis.new(FakeRedis::Redis.new(),
+        :default_ttl => 1.minute.to_i)
+      
+    else
+      require 'cash/adapter/memcached'
+      # Test with memcached client
+      $memcache = Cash::Adapter::Memcached.new(Memcached.new(config["servers"], config), 
+        :default_ttl => 1.minute.to_i)
+    end
   end
 
   config.before :each do
@@ -26,8 +45,10 @@ Spec::Runner.configure do |config|
   end
 
   config.before :suite do
+    Cash.configure :repository => $memcache, :adapter => false
+    
     ActiveRecord::Base.class_eval do
-      is_cached :repository => Cash::Transactional.new($memcache, $lock)
+      is_cached
     end
 
     Character = Class.new(ActiveRecord::Base)

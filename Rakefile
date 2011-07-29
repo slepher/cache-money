@@ -1,14 +1,7 @@
-begin
-  require File.expand_path('../.bundle/environment', __FILE__)
-rescue LoadError
-  begin
-    require 'rubygems'
-    require 'bundler'
-    Bundler.require
-  rescue
-    require File.expand_path('../config/environment', __FILE__)
-  end
-end
+require 'rubygems'
+require 'bundler/setup'
+Bundler.require :default, 'development'
+require File.expand_path('../config/environment', __FILE__)
 
 begin
   require 'rake/testtask'

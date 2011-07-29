@@ -2,8 +2,10 @@ require "spec_helper"
 
 module Cash
   describe Transactional do
+    let(:lock) { Cash::Lock.new($memcache) }
+    
     before do
-      @cache = Transactional.new($memcache, $lock)
+      @cache = Transactional.new($memcache, lock)
       @value = "stuff to be cached"
       @key   = "key"
     end
@@ -230,9 +232,9 @@ module Cash
 
       describe 'Lock Acquisition' do
         it "locks @keys to be written before writing to memcache and release them after" do
-          mock($lock).acquire_lock(@key)
+          mock(lock).acquire_lock(@key)
           mock($memcache).set(@key, @value)
-          mock($lock).release_lock(@key)
+          mock(lock).release_lock(@key)
 
           @cache.transaction do
             @cache.set(@key, @value)
@@ -240,8 +242,8 @@ module Cash
         end
 
         it "does not acquire locks on reads" do
-          mock($lock).acquire_lock.never
-          mock($lock).release_lock.never
+          mock(lock).acquire_lock.never
+          mock(lock).release_lock.never
 
           @cache.transaction do
             @cache.get(@key)
@@ -250,11 +252,11 @@ module Cash
 
         it "locks @keys in lexically sorted order" do
           keys = ['c', 'a', 'b']
-          keys.sort.inject(mock($lock)) do |mock, key|
+          keys.sort.inject(mock(lock)) do |mock, key|
             mock.acquire_lock(key).then
           end
           keys.each { |key| mock($memcache).set(key, @value) }
-          keys.each { |key| mock($lock).release_lock(key) }
+          keys.each { |key| mock(lock).release_lock(key) }
           @cache.transaction do
             @cache.set(keys[0], @value)
             @cache.set(keys[1], @value)
@@ -263,8 +265,8 @@ module Cash
         end
 
         it "releases locks even if memcache blows up" do
-          mock($lock).acquire_lock.with(@key)
-          mock($lock).release_lock.with(@key)
+          mock(lock).acquire_lock.with(@key)
+          mock(lock).release_lock.with(@key)
           stub($memcache).set(anything, anything) { raise }
           @cache.transaction do
             @cache.set(@key, @value)
@@ -414,8 +416,8 @@ module Cash
       end
 
       it "does not acquire locks if transaction is rolled back" do
-        mock($lock).acquire_lock.never
-        mock($lock).release_lock.never
+        mock(lock).acquire_lock.never
+        mock(lock).release_lock.never
 
         @cache.transaction do
           @cache.set(@key, value)
@@ -474,11 +476,11 @@ module Cash
 
       it "acquire locks in lexical order for all keys" do
         keys = ['c', 'a', 'b']
-        keys.sort.inject(mock($lock)) do |mock, key|
+        keys.sort.inject(mock(lock)) do |mock, key|
           mock.acquire_lock(key).then
         end
         keys.each { |key| mock($memcache).set(key, @value) }
-        keys.each { |key| mock($lock).release_lock(key) }
+        keys.each { |key| mock(lock).release_lock(key) }
         @cache.transaction do
           @cache.set(keys[0], @value)
           @cache.transaction do
@@ -504,8 +506,8 @@ module Cash
 
       describe 'Error Handling' do
         it "releases locks even if memcache blows up" do
-          mock($lock).acquire_lock(@key)
-          mock($lock).release_lock(@key)
+          mock(lock).acquire_lock(@key)
+          mock(lock).release_lock(@key)
           stub($memcache).set(anything, anything) { raise }
           @cache.transaction do
             @cache.transaction do
@@ -543,8 +545,8 @@ module Cash
         end
 
         it "not acquire locks if transaction is rolled back" do
-          mock($lock).acquire_lock.never
-          mock($lock).release_lock.never
+          mock(lock).acquire_lock.never
+          mock(lock).release_lock.never
 
           @cache.transaction do
             @cache.transaction do

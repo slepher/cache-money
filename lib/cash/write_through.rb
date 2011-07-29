@@ -50,19 +50,23 @@ module Cash
 
     module ClassMethods
       def add_to_caches(object)
-        indices.each { |index| index.add(object) } if cache_config
+        indices.each { |index| index.add(object) } if cacheable?
+        true
       end
 
       def update_caches(object)
-        indices.each { |index| index.update(object) } if cache_config
+        indices.each { |index| index.update(object) } if cacheable?
+        true
       end
 
       def remove_from_caches(object)
-        indices.each { |index| index.remove(object) } if cache_config
+        indices.each { |index| index.remove(object) } if cacheable?
+        true
       end
 
       def expire_caches(object)
-        indices.each { |index| index.delete(object) } if cache_config
+        indices.each { |index| index.delete(object) } if cacheable?
+        true
       end
     end
   end
