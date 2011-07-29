@@ -1,6 +1,7 @@
 require 'active_support'
 require 'active_record'
 
+require 'cash/version'
 require 'cash/lock'
 require 'cash/transactional'
 require 'cash/write_through'
@@ -24,7 +25,7 @@ require 'cash/util/marshal'
 
 class ActiveRecord::Base
   def self.is_cached(options = {})
-    if options == false
+    if (options == false || options[:repository].nil?)
       include NoCash
     else
       options.assert_valid_keys(:ttl, :repository, :version)
