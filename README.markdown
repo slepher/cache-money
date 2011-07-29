@@ -133,9 +133,11 @@ In most cases locks are unnecessary; the transactional Memcached client will tak
 
 Sometimes your code will request the same cache key twice in one request. You can avoid a round trip to the Memcached server by using a local, per-request cache. Add this to your initializer:
 
-  $local = Cash::Local.new($memcache)
-  $cache = Cash::Transactional.new($local, $lock)
-
+    $memcache = MemcachedWrapper.new(config[:servers].gsub(' ', '').split(','), config)
+    $local = Cash::Local.new($memcache)
+    $lock  = Cash::Lock.new($memcache)
+    $cache = Cash::Transactional.new($local, $lock)
+    
 ## Installation ##
 
 #### Step 0: Install MemCached
