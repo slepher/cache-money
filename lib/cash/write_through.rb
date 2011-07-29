@@ -1,6 +1,6 @@
 module Cash
   module WriteThrough
-    DEFAULT_TTL = 12.hours
+    DEFAULT_TTL = 12.hours.to_i
 
     def self.included(active_record_class)
       active_record_class.class_eval do
