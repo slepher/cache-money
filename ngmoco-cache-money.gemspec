@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require 'lib/cash/version'
+require File.join(File.dirname(__FILE__), 'lib/cash/version')
 
 Gem::Specification.new do |s|
   s.name = %q{ngmoco-cache-money}
