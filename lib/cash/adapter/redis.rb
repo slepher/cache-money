@@ -74,7 +74,11 @@ module Cash
       end
             
       def get_server_for_key(key)
-        wrap(key) { @repository.node_for(key) }
+        wrap(key) do
+          # Redis::Distributed has a node_for method. 
+          client = @repository.respond_to?(:node_for) ? @repository.node_for(key) : @repository.client
+          client.id
+        end
       end
 
       def incr(key, value = 1)
