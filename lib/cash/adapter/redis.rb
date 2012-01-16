@@ -72,7 +72,11 @@ module Cash
           deleted
         end
       end
-      
+            
+      def get_server_for_key(key)
+        wrap(key) { @repository.node_for(key) }
+      end
+
       def incr(key, value = 1)
         # Redis always answeres positively to incr/decr but memcache does not and waits for the key
         # to be added in a separate operation.
