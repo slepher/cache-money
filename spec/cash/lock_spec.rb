@@ -54,7 +54,7 @@ module Cash
         end
       end
 
-      describe 'when to processes contend for a lock' do
+      describe 'when two processes contend for a lock' do
         it "prevents two processes from acquiring the same lock at the same time" do
           lock.acquire_lock('lock_key')
           as_another_process do
@@ -80,6 +80,10 @@ module Cash
             stub(lock).sleep(2 * initial_wait)
             stub(lock).sleep(4 * initial_wait)
             stub(lock).sleep(8 * initial_wait)
+            stub(lock).sleep(16 * initial_wait)
+            stub(lock).sleep(32 * initial_wait)
+            stub(lock).sleep(64 * initial_wait)
+            stub(lock).sleep(128 * initial_wait)
             lock.acquire_lock('lock_key')
             as_another_process do
               lambda { lock.acquire_lock('lock_key', Lock::DEFAULT_EXPIRY, Lock::DEFAULT_RETRY, initial_wait) }.should raise_error(Cash::Lock::Error)
