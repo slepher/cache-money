@@ -1,9 +1,10 @@
 # -*- encoding: utf-8 -*-
-require File.join(File.dirname(__FILE__), 'lib/cash/version')
+#require File.join(File.dirname(__FILE__), 'lib/cash/version')
 
 Gem::Specification.new do |s|
   s.name = %q{cache-money}
-  s.version = Cash::VERSION
+  #s.version = Cash::VERSION
+  s.version = "1.0.0"
 
   s.required_rubygems_version = '1.3.7'
   s.authors = ["Nick Kallen", "Ashley Martens", "Scott Mace", "John O'Neill"]
