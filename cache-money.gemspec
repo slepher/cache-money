@@ -38,13 +38,14 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency(%q<activerecord>, [">= 3.0.0"])
   s.add_runtime_dependency(%q<activesupport>)
   s.add_runtime_dependency(%q<actionpack>)
-  s.add_runtime_dependency(%q<memcached>) 
-  s.add_runtime_dependency(%q<jeweler>, [">= 1.4.0"])
+  #s.add_runtime_dependency(%q<jeweler>, [">= 1.4.0"])
 
   s.add_development_dependency(%q<rake>)
   s.add_development_dependency(%q<ruby-debug>, ["~> 0.10.0"])
   s.add_development_dependency(%q<rspec>, ["~> 1.3.0"])
   s.add_development_dependency(%q<sqlite3-ruby>)
   s.add_development_dependency(%q<rr>)
+  #s.add_development_dependency(%q<memcached>) 
+  
 end
 
