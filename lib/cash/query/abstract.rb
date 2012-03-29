@@ -92,9 +92,8 @@ module Cash
       end
 
       def safe_options_for_cache?(options)
-        return true if options.kind_of(Arel::SelectManager)
         return false unless options.kind_of?(Hash)
-        options.except(:conditions, :readonly, :limit, :offset, :order).values.compact.empty? && !options[:readonly]
+        options.except(:conditions, :readonly, :limit, :offset, :order, :binds).values.compact.empty? && !options[:readonly]
       end
 
       def attribute_value_pairs_for_conditions(conditions)
@@ -106,7 +105,7 @@ module Cash
         when Array
           parse_indices_from_condition(*conditions)
         when Arel::SelectManager
-          sql.constraints.first.children.map {|c| [c.left.name, c.right]}.to_a
+          conditions.constraints.first.children.map {|c| [c.left.name, c.right]}.to_a
         when NilClass
           []
         end

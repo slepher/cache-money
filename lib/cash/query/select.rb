@@ -11,7 +11,9 @@ module Cash
       end
 
       def uncacheable
-        find_without_cache(@options1)
+        arel = @options1[:conditions]
+        binds = @options1[:binds]
+        find_by_sql_without_cache(arel, binds)
       end
     end
   end

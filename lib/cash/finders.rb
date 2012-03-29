@@ -27,7 +27,7 @@ module Cash
       def find_by_sql_with_cache(sql, binds)
         if cacheable?
           puts sql.inspect
-          Query::Select.perform(self, { :conditions => arel, :binds => binds}, scope(:find))
+          Query::Select.perform(self, { :conditions => sql, :binds => binds}, { })
         else
           find_by_sql_without_cache(sql, binds)
         end
