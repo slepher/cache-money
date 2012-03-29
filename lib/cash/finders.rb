@@ -10,6 +10,7 @@ module Cash
       def self.extended(active_record_class)
         class << active_record_class
           alias_method_chain :relation, :cache
+          alias_method_chain :find_by_sql, :cache
         end
       end
 
@@ -21,6 +22,14 @@ module Cash
 
       def without_cache(&block)
         with_scope(:find => {:readonly => true}, &block)
+      end
+
+      def find_by_sql_with_cache(sql, binds)
+        if cacheable?
+          Query::Select.perform(self, { :conditions => arel, :binds => binds}, scope(:find))
+        else
+          find_by_sql_without_cache(sql, binds)
+        end
       end
 
       def find_every_without_cache(*args)
