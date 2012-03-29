@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency(%q<activerecord>, [">= 3.0.0"])
   s.add_runtime_dependency(%q<activesupport>)
   s.add_runtime_dependency(%q<actionpack>)
-  s.add_runtime_dependency(%q<memcached>) # sudo apt-get install libsasl2-dev
+  #s.add_runtime_dependency(%q<memcached>) # sudo apt-get install libsasl2-dev
   #s.add_runtime_dependency(%q<jeweler>, [">= 1.4.0"])
 
   s.add_development_dependency(%q<rake>)
