@@ -23,12 +23,6 @@ require 'cash/query/calculation'
 require 'cash/util/array'
 require 'cash/util/marshal'
 
-require 'cash/relation/cached_finder_methods'
-
-class ActiveRecord::Relation
-  attr_accessor :is_cached
-end
-
 class ActiveRecord::Base
   def self.is_cached(options = {})
     if options == false
