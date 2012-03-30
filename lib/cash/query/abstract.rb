@@ -105,6 +105,7 @@ module Cash
         when Array
           parse_indices_from_condition(*conditions)
         when Arel::SelectManager
+          puts conditions.constraints.first.inspect
           conditions.constraints.first.children.map {|c| [c.left.name, c.right]}.to_a
         when NilClass
           []
