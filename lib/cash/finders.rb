@@ -32,10 +32,6 @@ module Cash
         end
       end
 
-      def find_every_without_cache(*args)
-        find_without_cache(:all, *args)
-      end
-      
       def find_without_cache(*args)
         find(*args)
       end

@@ -1,16 +1,6 @@
 module Cash
   module Relation
     module CachedFinderMethods
-      def find_by_attributes_with_cache(match, attributes, *args)
-        conditions = attributes.inject({}) {|h, a| h[a] = args[attributes.index(a)]; h}
-        result = where(conditions).send(match.finder)
-
-        if match.bang? && result.blank?
-          raise RecordNotFound, "Couldn't find #{@klass.name} with #{conditions.to_a.collect {|p| p.join(' = ')}.join(', ')}"
-        else
-          result
-        end
-      end
 
       def find_one_with_cache(id)
         id = id.id if ActiveRecord::Base === id
@@ -27,10 +17,22 @@ module Cash
 
         record
       end
+
+      def find_some_without_cache_public(*args)
+        find_some_without_cache(*args)
+      end
+
+      def find_with_id_with_cache(ids)
+        if cacheable?
+          Query::PrimaryKey.perform(self, ids, { }, { })
+        else
+          find_with_ids_without_cache(ids, options)
+        end
+      end
       
-      def find_some_with_cache(ids)
+      def find_with_id_with_cache_bak(ids)
         result = @klass.get(ids) do
-          find_some_without_cache(ids)
+          find_with_id_without_cache(ids)
         end
         
         result = ids.collect { |id| result[@klass.cache_key(id)] }.flatten.compact

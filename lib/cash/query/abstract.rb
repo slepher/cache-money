@@ -1,7 +1,7 @@
 module Cash
   module Query
     class Abstract
-      delegate :with_exclusive_scope, :get, :table_name, :indices, :find_from_ids_without_cache, :cache_key, :columns_hash, :logger, :to => :@active_record
+      delegate :with_exclusive_scope, :get, :table_name, :indices, :relation, :cache_key, :columns_hash, :logger, :to => :@active_record
 
       def self.perform(*args)
         new(*args).perform
@@ -105,8 +105,7 @@ module Cash
         when Array
           parse_indices_from_condition(*conditions)
         when Arel::SelectManager
-          puts conditions.constraints.first.inspect
-          conditions.constraints.first.children.map {|c| [c.left.name, c.right]}.to_a
+          parse_indices_from_condition(conditions.where_sql.gsub(/^WHERE /, ""))
         when NilClass
           []
         end
@@ -193,7 +192,7 @@ module Cash
         options = {}
         order_sql = @options1[:order] || @options2[:order]
         options[:order] = order_sql if order_sql
-        find_from_ids_without_cache(missing_ids, options)
+        relation.find_some_without_cache_public(missing_ids)
       end
     end
   end

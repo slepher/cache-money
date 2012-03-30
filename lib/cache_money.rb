@@ -30,7 +30,6 @@ class ActiveRecord::Relation
 
   attr_accessor :is_cached
 
-  alias_method_chain :find_by_attributes, :cache
   alias_method_chain :find_one, :cache
   alias_method_chain :find_some, :cache
 end
