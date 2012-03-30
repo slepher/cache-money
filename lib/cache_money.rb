@@ -29,9 +29,7 @@ class ActiveRecord::Relation
   include Cash::Relation::CachedFinderMethods
 
   attr_accessor :is_cached
-
-  alias_method_chain :find_one, :cache
-  alias_method_chain :find_some, :cache
+  alias_method_chain :find_with_ids, :cache
 end
 
 class ActiveRecord::Base
