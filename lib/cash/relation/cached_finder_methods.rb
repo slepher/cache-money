@@ -22,7 +22,7 @@ module Cash
         find_some_without_cache(*args)
       end
 
-      def find_with_id_with_cache(ids)
+      def find_with_ids_with_cache(ids)
         if cacheable?
           Query::PrimaryKey.perform(self, ids, { }, { })
         else
@@ -30,7 +30,7 @@ module Cash
         end
       end
       
-      def find_with_id_with_cache_bak(ids)
+      def find_with_ids_with_cache_bak(ids)
         result = @klass.get(ids) do
           find_with_id_without_cache(ids)
         end
