@@ -26,10 +26,7 @@ require 'cash/util/marshal'
 require 'cash/relation/cached_finder_methods'
 
 class ActiveRecord::Relation
-  include Cash::Relation::CachedFinderMethods
-
   attr_accessor :is_cached
-  alias_method_chain :find_with_ids, :cache
 end
 
 class ActiveRecord::Base

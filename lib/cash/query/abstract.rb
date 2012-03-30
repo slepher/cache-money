@@ -1,14 +1,15 @@
 module Cash
   module Query
     class Abstract
-      delegate :with_exclusive_scope, :get, :table_name, :indices, :relation, :cache_key, :columns_hash, :logger, :to => :@active_record
+      delegate :with_exclusive_scope, :get, :table_name, :indices, :relation, :connection, :cache_key, :columns_hash, :logger, :to => :@active_record
 
       def self.perform(*args)
         new(*args).perform
       end
 
       def initialize(active_record, options1, options2)
-        @active_record, @options1, @options2 = active_record, options1, options2 || {}
+        @binds = options2 || []
+        @active_record, @options1, @options2 = active_record, options1, { }
 
         # if @options2.empty? and active_record.base_class != active_record
         #   @options2 = { :conditions => { active_record.inheritance_column => active_record.to_s }}
@@ -105,7 +106,11 @@ module Cash
         when Array
           parse_indices_from_condition(*conditions)
         when Arel::SelectManager
-          parse_indices_from_condition(conditions.where_sql.gsub(/^WHERE /, ""))
+          binds = @binds.dup
+          sql = conditions.where_sql.to_s.gsub(/^WHERE /, "").gsub("\0") do 
+            connection.quote(*binds.shift.reverse) 
+          end
+          parse_indices_from_condition(sql)
         when NilClass
           []
         end
@@ -192,7 +197,7 @@ module Cash
         options = {}
         order_sql = @options1[:order] || @options2[:order]
         options[:order] = order_sql if order_sql
-        relation.find_some_without_cache_public(missing_ids)
+        relation.find_with_ids_without_cache_public(missing_ids)
       end
     end
   end

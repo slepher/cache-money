@@ -9,15 +9,8 @@ module Cash
     module ClassMethods
       def self.extended(active_record_class)
         class << active_record_class
-          alias_method_chain :relation, :cache
           alias_method_chain :find_by_sql, :cache
         end
-      end
-
-      def relation_with_cache #:nodoc:
-        @relation ||= ActiveRecord::Relation.new(self, arel_table)
-        @relation.is_cached = true
-        relation_without_cache
       end
 
       def without_cache(&block)
@@ -26,7 +19,11 @@ module Cash
 
       def find_by_sql_with_cache(sql, binds)
         if cacheable?
-          Query::Select.perform(self, { :conditions => sql, :binds => binds}, { })
+          if sql.where_sql
+            Query::Select.perform(self, { :conditions => sql, :binds => binds}, binds)
+          else
+            find_by_sql_without_cache(sql, binds)
+          end
         else
           find_by_sql_without_cache(sql, binds)
         end
