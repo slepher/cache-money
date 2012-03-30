@@ -2,7 +2,7 @@ module Cash
   module Relation
     module CachedFinderMethods
 
-      def find_one_with_cache(id)
+      def find_one_with_cache2(id)
         id = id.id if ActiveRecord::Base === id
 
         record = @klass.get(id) do
@@ -22,11 +22,11 @@ module Cash
         find_some_without_cache(*args)
       end
 
-      def find_with_ids_with_cache(ids)
+      def find_with_ids_with_cache(*ids)
         if cacheable?
           Query::PrimaryKey.perform(self, ids, { }, { })
         else
-          find_with_ids_without_cache(ids, options)
+          find_with_ids_without_cache(*ids)
         end
       end
       
