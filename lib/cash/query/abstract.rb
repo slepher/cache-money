@@ -126,7 +126,7 @@ module Cash
         values = values.dup
         conditions.split(AND).inject([]) do |indices, condition|
           matched, table_name, column_name, sql_value = *(KEY_EQ_VALUE.match(condition))
-          if matched
+          if matched && (table_name == self.table_name)
             # value = sql_value == '?' ? values.shift : columns_hash[column_name].type_cast(sql_value)
             if sql_value == '?'
               value = values.shift
